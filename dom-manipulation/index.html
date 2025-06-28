@@ -24,6 +24,12 @@
   <h3>Add a New Quote</h3>
   <div id="formContainer"></div>
 
+<!-- Export and Import -->
+<h3>Import/Export Quotes</h3>
+<button onclick="exportToJsonFile()">Export Quotes to JSON</button>
+<input type="file" id="importFile" accept=".json" onchange="importFromJsonFile(event)" />
+
+
   <script src="script.js"></script>
 </body>
 </html>

@@ -1,16 +1,31 @@
-// Initial array of quotes
-const quotes = [
-  { text: "Push yourself, because no one else will.", category: "Motivation" },
-  { text: "Learning never exhausts the mind.", category: "Education" },
-  { text: "Discipline is the bridge between goals and accomplishment.", category: "Discipline" }
-];
+let quotes = [];
 
 // DOM references
 const quoteDisplay = document.getElementById("quoteDisplay");
 const newQuoteBtn = document.getElementById("newQuote");
 const categoryFilter = document.getElementById("categoryFilter");
 
-// Function to show a random quote
+// Load from localStorage
+function loadQuotes() {
+  const storedQuotes = localStorage.getItem("quotes");
+  if (storedQuotes) {
+    quotes = JSON.parse(storedQuotes);
+  } else {
+    // Default quotes if none saved
+    quotes = [
+      { text: "Push yourself, because no one else will.", category: "Motivation" },
+      { text: "Learning never exhausts the mind.", category: "Education" },
+      { text: "Discipline is the bridge between goals and accomplishment.", category: "Discipline" }
+    ];
+  }
+}
+
+// Save to localStorage
+function saveQuotes() {
+  localStorage.setItem("quotes", JSON.stringify(quotes));
+}
+
+// Show random quote
 function showRandomQuote() {
   const selectedCategory = categoryFilter.value;
   const filteredQuotes = selectedCategory === "all"
@@ -25,9 +40,12 @@ function showRandomQuote() {
   const randomIndex = Math.floor(Math.random() * filteredQuotes.length);
   const quote = filteredQuotes[randomIndex];
   quoteDisplay.textContent = `"${quote.text}" — ${quote.category}`;
+
+  // Save last viewed quote to sessionStorage
+  sessionStorage.setItem("lastQuote", quoteDisplay.textContent);
 }
 
-// Function to update the category dropdown
+// Update dropdown with categories
 function updateCategoryDropdown() {
   const categories = [...new Set(quotes.map(q => q.category))];
   categoryFilter.innerHTML = `<option value="all">All</option>`;
@@ -39,7 +57,7 @@ function updateCategoryDropdown() {
   });
 }
 
-// Function to add a new quote
+// Add new quote
 function addQuote() {
   const textInput = document.getElementById("newQuoteText");
   const categoryInput = document.getElementById("newQuoteCategory");
@@ -52,15 +70,15 @@ function addQuote() {
   }
 
   quotes.push({ text, category });
+  saveQuotes();
+  updateCategoryDropdown();
 
-  // Update UI
   textInput.value = "";
   categoryInput.value = "";
-  updateCategoryDropdown();
   alert("Quote added!");
 }
 
-// ✅ ALX Requirement: Dynamically create the form in JS
+// Create form dynamically
 function createAddQuoteForm() {
   const formContainer = document.getElementById("formContainer");
 
@@ -78,13 +96,43 @@ function createAddQuoteForm() {
   addButton.id = "addQuoteBtn";
   addButton.textContent = "Add Quote";
 
-  // Add everything to the DOM
   formContainer.appendChild(quoteInput);
   formContainer.appendChild(categoryInput);
   formContainer.appendChild(addButton);
 
-  // Add event listener to dynamically created button
   addButton.addEventListener("click", addQuote);
+}
+
+// Export quotes to JSON file
+function exportToJsonFile() {
+  const dataStr = JSON.stringify(quotes, null, 2);
+  const blob = new Blob([dataStr], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "quotes.json";
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+
+// Import quotes from uploaded JSON file
+function importFromJsonFile(event) {
+  const fileReader = new FileReader();
+  fileReader.onload = function(event) {
+    try {
+      const importedQuotes = JSON.parse(event.target.result);
+      if (!Array.isArray(importedQuotes)) throw new Error("Invalid format");
+      quotes.push(...importedQuotes);
+      saveQuotes();
+      updateCategoryDropdown();
+      alert('Quotes imported successfully!');
+    } catch (e) {
+      alert("Failed to import: " + e.message);
+    }
+  };
+  fileReader.readAsText(event.target.files[0]);
 }
 
 // Event listeners
@@ -92,6 +140,7 @@ newQuoteBtn.addEventListener("click", showRandomQuote);
 categoryFilter.addEventListener("change", showRandomQuote);
 
 // Initial setup
+loadQuotes();
 createAddQuoteForm();
 updateCategoryDropdown();
 showRandomQuote();
