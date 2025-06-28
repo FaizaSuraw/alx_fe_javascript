@@ -1,4 +1,5 @@
 let quotes = [];
+const SERVER_URL = "https://raw.githubusercontent.com/FaizaSuraw/alx_fe_javascript/main/dom-manipulation/server-quotes.json";
 
 // DOM references
 const quoteDisplay = document.getElementById("quoteDisplay");
@@ -11,11 +12,7 @@ function loadQuotes() {
   if (storedQuotes) {
     quotes = JSON.parse(storedQuotes);
   } else {
-    quotes = [
-      { text: "Push yourself, because no one else will.", category: "Motivation" },
-      { text: "Learning never exhausts the mind.", category: "Education" },
-      { text: "Discipline is the bridge between goals and accomplishment.", category: "Discipline" }
-    ];
+    quotes = [];
   }
 }
 
@@ -24,7 +21,12 @@ function saveQuotes() {
   localStorage.setItem("quotes", JSON.stringify(quotes));
 }
 
-// Create form dynamically
+// Show notification
+function showNotification(message) {
+  alert("🔄 Sync Notice: " + message);
+}
+
+// Create quote form
 function createAddQuoteForm() {
   const formContainer = document.getElementById("formContainer");
 
@@ -49,7 +51,7 @@ function createAddQuoteForm() {
   addButton.addEventListener("click", addQuote);
 }
 
-// Add new quote to array and storage
+// Add quote
 function addQuote() {
   const textInput = document.getElementById("newQuoteText");
   const categoryInput = document.getElementById("newQuoteCategory");
@@ -70,7 +72,7 @@ function addQuote() {
   alert("Quote added!");
 }
 
-// Populate category dropdown dynamically
+// Populate category dropdown
 function populateCategories() {
   const categories = [...new Set(quotes.map(q => q.category))];
   const savedFilter = localStorage.getItem("lastFilter") || "all";
@@ -87,7 +89,7 @@ function populateCategories() {
   });
 }
 
-// Filter and display quotes based on selected category
+// Filter quotes
 function filterQuotes() {
   const selectedCategory = categoryFilter.value;
   localStorage.setItem("lastFilter", selectedCategory);
@@ -108,7 +110,7 @@ function filterQuotes() {
   sessionStorage.setItem("lastQuote", quoteDisplay.textContent);
 }
 
-// Export quotes as downloadable JSON file
+// Export to JSON
 function exportToJsonFile() {
   const dataStr = JSON.stringify(quotes, null, 2);
   const blob = new Blob([dataStr], { type: "application/json" });
@@ -118,11 +120,10 @@ function exportToJsonFile() {
   a.href = url;
   a.download = "quotes.json";
   a.click();
-
   URL.revokeObjectURL(url);
 }
 
-// Import quotes from uploaded JSON file
+// Import from JSON
 function importFromJsonFile(event) {
   const fileReader = new FileReader();
   fileReader.onload = function(event) {
@@ -140,12 +141,42 @@ function importFromJsonFile(event) {
   fileReader.readAsText(event.target.files[0]);
 }
 
+// Sync quotes with simulated server (fetch new quotes)
+async function syncWithServer() {
+  try {
+    const response = await fetch(SERVER_URL);
+    const serverQuotes = await response.json();
+
+    // Check for new or updated quotes
+    let conflicts = 0;
+    serverQuotes.forEach(serverQuote => {
+      const exists = quotes.some(local => local.text === serverQuote.text);
+      if (!exists) {
+        quotes.push(serverQuote);
+        conflicts++;
+      }
+    });
+
+    if (conflicts > 0) {
+      saveQuotes();
+      populateCategories();
+      showNotification(`${conflicts} new quote(s) added from server.`);
+    }
+  } catch (error) {
+    console.error("Sync failed:", error);
+  }
+}
+
+// Periodic sync
+setInterval(syncWithServer, 10000); // Every 10 seconds
+
 // Event listeners
 newQuoteBtn.addEventListener("click", filterQuotes);
 categoryFilter.addEventListener("change", filterQuotes);
 
-// Initial setup
+// Init
 loadQuotes();
 createAddQuoteForm();
 populateCategories();
 filterQuotes();
+syncWithServer(); // Initial sync
