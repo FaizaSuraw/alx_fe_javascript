@@ -1,5 +1,5 @@
 let quotes = [];
-const SERVER_URL = "https://raw.githubusercontent.com/FaizaSuraw/alx_fe_javascript/refs/heads/master/dom-manipulation/server-quotes.json"
+const SERVER_URL = "https://raw.githubusercontent.com/FaizaSuraw/alx_fe_javascript/refs/heads/master/dom-manipulation/server-quotes.json";
 
 // DOM references
 const quoteDisplay = document.getElementById("quoteDisplay");
@@ -21,12 +21,12 @@ function saveQuotes() {
   localStorage.setItem("quotes", JSON.stringify(quotes));
 }
 
-// Show notification
+// Show notification to user
 function showNotification(message) {
   alert("🔄 Sync Notice: " + message);
 }
 
-// Create quote form
+// Create quote form dynamically
 function createAddQuoteForm() {
   const formContainer = document.getElementById("formContainer");
 
@@ -51,7 +51,7 @@ function createAddQuoteForm() {
   addButton.addEventListener("click", addQuote);
 }
 
-// Add quote
+// Add quote to array and update UI
 function addQuote() {
   const textInput = document.getElementById("newQuoteText");
   const categoryInput = document.getElementById("newQuoteCategory");
@@ -89,7 +89,7 @@ function populateCategories() {
   });
 }
 
-// Filter quotes
+// Filter and show random quote
 function filterQuotes() {
   const selectedCategory = categoryFilter.value;
   localStorage.setItem("lastFilter", selectedCategory);
@@ -110,7 +110,7 @@ function filterQuotes() {
   sessionStorage.setItem("lastQuote", quoteDisplay.textContent);
 }
 
-// Export to JSON
+// Export to JSON file
 function exportToJsonFile() {
   const dataStr = JSON.stringify(quotes, null, 2);
   const blob = new Blob([dataStr], { type: "application/json" });
@@ -123,10 +123,10 @@ function exportToJsonFile() {
   URL.revokeObjectURL(url);
 }
 
-// Import from JSON
+// Import from JSON file
 function importFromJsonFile(event) {
   const fileReader = new FileReader();
-  fileReader.onload = function(event) {
+  fileReader.onload = function (event) {
     try {
       const importedQuotes = JSON.parse(event.target.result);
       if (!Array.isArray(importedQuotes)) throw new Error("Invalid format");
@@ -141,13 +141,12 @@ function importFromJsonFile(event) {
   fileReader.readAsText(event.target.files[0]);
 }
 
-// Sync quotes with simulated server (fetch new quotes)
-async function syncWithServer() {
+// ✅ Required: Fetch quotes from server (mock)
+async function fetchQuotesFromServer() {
   try {
     const response = await fetch(SERVER_URL);
     const serverQuotes = await response.json();
 
-    // Check for new or updated quotes
     let conflicts = 0;
     serverQuotes.forEach(serverQuote => {
       const exists = quotes.some(local => local.text === serverQuote.text);
@@ -163,12 +162,30 @@ async function syncWithServer() {
       showNotification(`${conflicts} new quote(s) added from server.`);
     }
   } catch (error) {
-    console.error("Sync failed:", error);
+    console.error("Failed to fetch server quotes:", error);
   }
 }
 
-// Periodic sync
-setInterval(syncWithServer, 10000); // Every 10 seconds
+// ✅ Required: Sync quotes with server
+function syncQuotes() {
+  fetchQuotesFromServer();
+
+  // ✅ Simulate POSTing local quotes to server (mock)
+  fetch(SERVER_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(quotes)
+  }).then(() => {
+    console.log("Quotes sent to server (simulated).");
+  }).catch(err => {
+    console.error("POST failed:", err);
+  });
+}
+
+// ✅ Periodic sync (required)
+setInterval(syncQuotes, 10000);
 
 // Event listeners
 newQuoteBtn.addEventListener("click", filterQuotes);
@@ -179,4 +196,4 @@ loadQuotes();
 createAddQuoteForm();
 populateCategories();
 filterQuotes();
-syncWithServer(); // Initial sync
+syncQuotes();
