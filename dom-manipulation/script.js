@@ -143,12 +143,15 @@ async function fetchQuotesFromServer() {
     if (added > 0) {
       saveQuotes();
       populateCategories();
-      showNotification(`${added} quote(s) synced from server.`);
     }
+
+    // ✅ Required exact wording by ALX
+    showNotification("Quotes synced with server!");
   } catch (e) {
     console.error("Fetch failed:", e);
   }
 }
+
 
 // ✅ Required: post to server using JSONPlaceholder
 function syncQuotes() {
