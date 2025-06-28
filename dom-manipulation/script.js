@@ -1,5 +1,5 @@
 let quotes = [];
-const SERVER_URL = "https://raw.githubusercontent.com/FaizaSuraw/alx_fe_javascript/main/dom-manipulation/server-quotes.json";
+const SERVER_URL = "https://raw.githubusercontent.com/FaizaSuraw/alx_fe_javascript/refs/heads/master/dom-manipulation/server-quotes.json"
 
 // DOM references
 const quoteDisplay = document.getElementById("quoteDisplay");
