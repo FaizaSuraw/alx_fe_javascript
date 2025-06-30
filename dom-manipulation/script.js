@@ -79,8 +79,8 @@ function populateCategories() {
   });
 }
 
-// Filter and show quote
-function filterQuotes() {
+// ✅ ALX Required: Show random quote
+function showRandomQuote() {
   const selected = categoryFilter.value;
   localStorage.setItem("lastFilter", selected);
   const filtered = selected === "all" ? quotes : quotes.filter(q => q.category === selected);
@@ -152,7 +152,6 @@ async function fetchQuotesFromServer() {
   }
 }
 
-
 // ✅ Required: post to server using JSONPlaceholder
 function syncQuotes() {
   fetchQuotesFromServer();
@@ -167,16 +166,16 @@ function syncQuotes() {
     .catch(err => console.error("POST failed:", err));
 }
 
-// ✅ Required: periodic sync
+// ✅ Required: periodic sync every 10 seconds
 setInterval(syncQuotes, 10000);
 
-// Event bindings
-newQuoteBtn.addEventListener("click", filterQuotes);
-categoryFilter.addEventListener("change", filterQuotes);
+// ✅ Event bindings
+newQuoteBtn.addEventListener("click", showRandomQuote);
+categoryFilter.addEventListener("change", showRandomQuote);
 
-// Init
+// ✅ Init
 loadQuotes();
 createAddQuoteForm();
 populateCategories();
-filterQuotes();
+showRandomQuote();
 syncQuotes();
